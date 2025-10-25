@@ -1,15 +1,19 @@
+import os
+import json
 import firebase_admin
 from firebase_admin import credentials, auth
 
-cred = credentials.Certificate("firebase-admin.json")
-firebase_admin.initialize_app(cred)
+# Load credentials from environment variable
+firebase_json = os.getenv("FIREBASE_CREDENTIALS")
+if not firebase_json:
+    raise RuntimeError("FIREBASE_CREDENTIALS not set")
 
-def verify_token(token: str):
-    return auth.verify_id_token(token)
+cred = credentials.Certificate(json.loads(firebase_json))
+
+# Initialize Firebase app
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
 
 def get_user_role(token: str) -> str:
-    try:
-        decoded = verify_token(token)
-        return decoded.get("role", "user")
-    except Exception:
-        return "unauthorized"
+    decoded = auth.verify_id_token(token)
+    return decoded.get("role", "user")
