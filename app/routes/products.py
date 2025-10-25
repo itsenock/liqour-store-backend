@@ -25,3 +25,15 @@ def create_liquor(data: LiquorCreate, db: Session = Depends(get_db), token: str 
     db.add(liquor)
     db.commit()
     return liquor
+@router.get("/{liquor_id}", response_model=LiquorResponse)
+def get_liquor(liquor_id: str, db: Session = Depends(get_db)):
+    liquor = db.query(Liquor).filter(Liquor.id == liquor_id).first()
+    if not liquor:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return liquor
+@router.get("/", response_model=list[LiquorResponse])
+def get_liquors(category: str = None, db: Session = Depends(get_db)):
+    query = db.query(Liquor)
+    if category:
+        query = query.filter(Liquor.category.ilike(category))
+    return query.order_by(Liquor.name.asc()).all()

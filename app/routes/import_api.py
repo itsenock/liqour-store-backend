@@ -1,25 +1,23 @@
-from fastapi import APIRouter, Depends, Header
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException
 from app.db import SessionLocal
-from app.services.liquor_importer import fetch_liquors
 from app.models.liquor import Liquor
-from app.core.firebase import get_user_role
+from app.services.normalize_openfood import parse_openfood_product
+import httpx
 
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try: yield db
-    finally: db.close()
+@router.post("/seed")
+async def seed_liquors():
+    async with httpx.AsyncClient() as client:
+        res = await client.get("https://world.openfoodfacts.org/category/alcoholic-beverages.json")
+        res.raise_for_status()
+        products = res.json().get("products", [])
 
-@router.get("/")
-async def import_liquors(db: Session = Depends(get_db), token: str = Header(...)):
-    role = get_user_role(token)
-    if role != "admin":
-        return {"error": "Unauthorized"}
-    data = await fetch_liquors()
-    for item in data:
-        liquor = Liquor(**item)
-        db.merge(liquor)
+    db = SessionLocal()
+    for product in products[:50]:  # Limit for performance
+        parsed = parse_openfood_product(product)
+        liquor = Liquor(**parsed)
+        db.add(liquor)
     db.commit()
-    return {"imported": len(data)}
+    db.close()
+    return {"message": f"{len(products[:50])} liquors imported"}
