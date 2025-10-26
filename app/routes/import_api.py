@@ -14,10 +14,25 @@ async def seed_liquors():
         products = res.json().get("products", [])
 
     db = SessionLocal()
+    imported = 0
+
     for product in products[:50]:  # Limit for performance
-        parsed = parse_openfood_product(product)
-        liquor = Liquor(**parsed)
-        db.add(liquor)
+        try:
+            parsed = parse_openfood_product(product)
+            if not parsed or not parsed.get("id"):
+                continue
+
+            # Avoid duplicates
+            if db.query(Liquor).filter(Liquor.id == parsed["id"]).first():
+                continue
+
+            liquor = Liquor(**parsed)
+            db.add(liquor)
+            imported += 1
+        except Exception as e:
+            print(f"Skipping product due to error: {e}")
+
     db.commit()
     db.close()
-    return {"message": f"{len(products[:50])} liquors imported"}
+
+    return {"message": f"{imported} liquors imported"}

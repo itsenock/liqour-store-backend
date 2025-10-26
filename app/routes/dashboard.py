@@ -8,21 +8,29 @@ router = APIRouter()
 
 def get_db():
     db = SessionLocal()
-    try: yield db
-    finally: db.close()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @router.get("/")
 def dashboard(db: Session = Depends(get_db)):
     product_count = db.query(Liquor).count()
     tx_count = db.query(MpesaTransaction).count()
-    total_revenue = db.query(MpesaTransaction).with_entities(MpesaTransaction.amount).all()
-    revenue_sum = sum(tx.amount for tx in total_revenue)
 
-    recent_tx = db.query(MpesaTransaction).order_by(MpesaTransaction.timestamp.desc()).limit(5).all()
+    # More efficient revenue aggregation
+    revenue_sum = db.query(MpesaTransaction).with_entities(
+        MpesaTransaction.amount
+    ).all()
+    total_revenue = sum(tx.amount for tx in revenue_sum)
+
+    recent_tx = db.query(MpesaTransaction).order_by(
+        MpesaTransaction.timestamp.desc()
+    ).limit(5).all()
 
     return {
-        "products": product_count,
-        "transactions": tx_count,
-        "revenue": revenue_sum,
-        "recent": [tx.reference for tx in recent_tx]
+        "total_products": product_count,
+        "total_transactions": tx_count,
+        "total_revenue": total_revenue,
+        "recent_references": [tx.reference for tx in recent_tx]
     }

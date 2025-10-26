@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Header, HTTPException
 from app.core.firebase import verify_token
-from app.schemas.user import UserProfile
+from app.schema.user import UserProfile
 
 router = APIRouter()
 
@@ -8,6 +8,7 @@ router = APIRouter()
 def get_current_user(authorization: str = Header(...)):
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid token format")
+    
     token = authorization.split(" ")[1]
     try:
         decoded = verify_token(token)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import SessionLocal
 from app.models.mpesa import MpesaTransaction
@@ -13,8 +13,8 @@ def get_db():
 
 @router.post("/mpesa/callback")
 async def mpesa_callback(request: Request, db: Session = Depends(get_db)):
-    data = await request.json()
     try:
+        data = await request.json()
         stk = data["Body"]["stkCallback"]
         result_code = stk["ResultCode"]
         result_desc = stk["ResultDesc"]
@@ -33,18 +33,23 @@ async def mpesa_callback(request: Request, db: Session = Depends(get_db)):
         )
         db.add(tx)
         db.commit()
-        return {"status": "logged"}
+        db.refresh(tx)
+
+        return {"status": "logged", "reference": tx.reference}
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=400, detail=f"Callback error: {str(e)}")
 
 @router.post("/stripe/webhook")
 async def stripe_webhook(request: Request):
     payload = await request.body()
-    print("Stripe Webhook:", payload.decode())
+    print("Stripe Webhook:", payload.decode())  # Replace with signature verification later
     return {"status": "received"}
 
 @router.post("/paypal/webhook")
 async def paypal_webhook(request: Request):
-    data = await request.json()
-    print("PayPal Webhook:", data)
-    return {"status": "received"}
+    try:
+        data = await request.json()
+        print("PayPal Webhook:", data)  # Replace with signature verification later
+        return {"status": "received"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Webhook error: {str(e)}")

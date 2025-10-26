@@ -1,7 +1,8 @@
 import stripe
-from app.core.config import STRIPE_SECRET_KEY
+from app.core.config import settings  # ✅ Import the settings object
 
-stripe.api_key = STRIPE_SECRET_KEY
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 def create_checkout_session(items: list[dict]) -> str:
     line_items = [

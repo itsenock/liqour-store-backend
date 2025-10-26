@@ -12,7 +12,7 @@ Base.metadata.create_all(bind=engine)
 # ✅ Initialize FastAPI app
 app = FastAPI(
     title="Liquor Store API",
-    description="Backend for managing products, payments, and imports",
+    description="Backend for managing products, payments, orders, and imports",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
