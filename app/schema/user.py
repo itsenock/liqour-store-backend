@@ -4,27 +4,21 @@ from datetime import datetime
 
 class UserProfile(BaseModel):
     uid: str = Field(..., description="Firebase UID of the user")
-    email: Optional[str] = Field(None, description="User's email address")
-    name: Optional[str] = Field(None, description="User's display name")
-    role: str = Field("user", description="User role, defaults to 'user'")
-    picture: Optional[str] = Field(None, description="URL to user's profile picture")
-    phone_number: Optional[str] = Field(None, description="User's phone number if available")
-    provider_id: Optional[str] = Field(None, description="Auth provider ID (e.g. google.com, password)")
+    email: Optional[str] = Field(None)
+    name: Optional[str] = Field(None)
+    role: str = Field("user")
+    picture: Optional[str] = Field(None)
+    phone_number: Optional[str] = Field(None)
+    provider_id: Optional[str] = Field(None)
 
     class Config:
-        from_attributes = True  # ✅ Pydantic v2 replacement for orm_mode
+        from_attributes = True
 
-class UserCreate(BaseModel):
-    uid: str = Field(..., description="Firebase UID")
-    email: Optional[str] = Field(None, description="User's email address")
-    name: Optional[str] = Field(None, description="User's display name")
-    role: str = Field("user", description="User role, defaults to 'user'")
-    picture: Optional[str] = Field(None, description="URL to user's profile picture")
-    phone_number: Optional[str] = Field(None, description="User's phone number if available")
-    provider_id: Optional[str] = Field(None, description="Auth provider ID (e.g. google.com, password)")
+class UserCreate(UserProfile):
+    pass
 
 class UserOut(UserProfile):
-    created_at: Optional[datetime] = Field(None, description="Timestamp when the user was created")
+    created_at: Optional[datetime] = Field(None)
 
     class Config:
         from_attributes = True

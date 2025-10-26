@@ -9,3 +9,5 @@ class User(Base):
     name = Column(String, nullable=True)
     role = Column(String, default="user")  # user, admin, staff
     picture = Column(String, nullable=True)
+    phone_number = Column(String, nullable=True)
+    provider_id = Column(String, nullable=True)

@@ -9,14 +9,14 @@ router = APIRouter()
 @router.post("/seed")
 async def seed_liquors():
     async with httpx.AsyncClient() as client:
-        res = await client.get("https://world.openfoodfacts.org/category/alcoholic-beverages.json")
+        res = await client.get("https://world.openfoodfacts.org/facets/categories/alcoholic-beverages.json")
         res.raise_for_status()
         products = res.json().get("products", [])
 
     db = SessionLocal()
     imported = 0
 
-    for product in products[:50]:  # Limit for performance
+    for product in products[:200]:  # Limit for performance
         try:
             parsed = parse_openfood_product(product)
             if not parsed or not parsed.get("id"):

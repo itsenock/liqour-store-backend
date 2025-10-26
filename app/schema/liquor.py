@@ -1,19 +1,13 @@
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel
 
-class LiquorBase(BaseModel):
-    name: str = Field(..., description="Name of the liquor")
-    category: str = Field(..., description="Category or type of liquor")
-    abv: float = Field(..., description="Alcohol by volume percentage")
-    price: float = Field(..., description="Price of the liquor")
-    image: str = Field(..., description="URL to the liquor image")
-    description: Optional[str] = Field(None, description="Optional description of the liquor")
+class LiquorCreate(BaseModel):
+    name: str
+    category: str
+    subcategory: str
+    abv: float
+    price: float
+    image: str
+    description: str
 
-class LiquorCreate(LiquorBase):
-    pass  # No ID required from client — generated server-side
-
-class LiquorResponse(LiquorBase):
-    id: str = Field(..., description="Unique identifier for the liquor")
-
-    class Config:
-        from_attributes = True  # ✅ Pydantic v2 replacement for orm_mode
+class LiquorResponse(LiquorCreate):
+    id: str

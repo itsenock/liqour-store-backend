@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, Text
+from sqlalchemy import Column, String, Float
 from app.db import Base
 
 class Liquor(Base):
@@ -7,7 +7,8 @@ class Liquor(Base):
     id = Column(String, primary_key=True, index=True)
     name = Column(String, nullable=False)
     category = Column(String, nullable=False)
-    abv = Column(Float, nullable=False)
+    subcategory = Column(String, nullable=False)
+    abv = Column(Float, nullable=True)
     price = Column(Float, nullable=False)
-    image = Column(String, nullable=False)
-    description = Column(Text, nullable=True)
+    image = Column(String, nullable=True)
+    description = Column(String, nullable=True)
